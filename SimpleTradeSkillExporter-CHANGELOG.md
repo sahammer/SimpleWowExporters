@@ -1,3 +1,8 @@
+# 1.4.1
+Bumps interface version for MoP Classic patch 50504.
+
+- Updated Interface and Interface-Mists to 50504
+
 # 1.4.0
 Adds Retail (Midnight) support and a new Markdown Table export format.
 

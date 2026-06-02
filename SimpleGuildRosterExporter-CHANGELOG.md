@@ -1,3 +1,8 @@
+# 1.0.2
+Bumps interface version for MoP Classic patch 50504.
+
+- Updated Interface and Interface-Mists to 50504
+
 # 1.0.1
 Fixes plain text header formatting and export window scope preservation.
 
