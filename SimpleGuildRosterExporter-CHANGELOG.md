@@ -1,3 +1,10 @@
+# 1.0.3
+Bumps interface versions for the latest Retail, TBC Anniversary, and Classic Era patches.
+
+- Updated Interface-Retail to 120100 for Midnight patch 12.1.0
+- Updated Interface-TBC to 20506 for Burning Crusade Classic patch 2.5.6
+- Updated Interface-Vanilla to 11509 for Classic Era patch 1.15.9
+
 # 1.0.2
 Bumps interface version for MoP Classic patch 50504.
 
