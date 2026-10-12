@@ -6,6 +6,22 @@
 --
 -- Public API:
 --
+--   SWE.PROJECT_MAINLINE / PROJECT_CLASSIC / PROJECT_TBC / PROJECT_WRATH / PROJECT_CATA /
+--   PROJECT_FOREVER / PROJECT_MISTS
+--     Numeric literals matching the corresponding WOW_PROJECT_* globals (which are only
+--     defined on their respective clients) — safe to use as table keys everywhere.
+--     See the comment block below for how PROJECT_FOREVER was determined.
+--
+--   SWE.isRetail
+--     True when this client exposes the modern/retail API surface (C_TradeSkillUI,
+--     ProfessionsFrame, C_GuildInfo, CommunitiesFrame, ...) — true on both true Retail
+--     (Mainline) and WoW Forever, which are different WOW_PROJECT_IDs but share this API.
+--
+--   SWE.isForever
+--     True only on WoW Forever specifically (WOW_PROJECT_ID == PROJECT_FOREVER) — use this,
+--     not SWE.isRetail, for anything that depends on Forever's distinct identity/content
+--     (e.g. Vanilla-era single-expansion data) rather than its shared API capability.
+--
 --   SWE.RenderRow(format, values) -> string
 --     Renders a single data row in the given format.
 --     format: "text" | "csv" | "markdown" | "md-table"
@@ -41,6 +57,37 @@
 local _, ns = ...
 ns.SWE = {}
 local SWE = ns.SWE
+
+-- ── Game version / flavor identity ──────────────────────────────────────────────────────
+-- Centralized here (not duplicated per-addon) so a correction only needs to happen once.
+-- WOW_PROJECT_* constants are only defined on their respective clients; use numeric literals
+-- as table keys elsewhere to avoid nil-key errors. Values sourced from
+-- https://warcraft.wiki.gg/wiki/WOW_PROJECT_ID
+SWE.PROJECT_MAINLINE = 1
+SWE.PROJECT_CLASSIC  = 2
+SWE.PROJECT_TBC      = 5
+SWE.PROJECT_WRATH    = 11
+SWE.PROJECT_CATA     = 14
+-- WoW Forever ("Camelot") gets its own WOW_PROJECT_ID, distinct from Mainline — confirmed by
+-- three independent, actively-maintained addons found on the Forever beta client: DBM-Core
+-- (`isForever = WOW_PROJECT_ID == (WOW_PROJECT_CAMELOT or 18)`), Details (explicitly branches
+-- on WOW_PROJECT_MAINLINE vs WOW_PROJECT_CAMELOT), and HereBeDragons-2.0 (bundled with TomTom;
+-- `WoWForever = (WOW_PROJECT_ID == WOW_PROJECT_CAMELOT)`, with no defensive fallback at all).
+-- The `(global or literal)` pattern below is the same fallback DBM-Core uses for a constant
+-- that may not be defined on every client; 18 is the confirmed real value. Full history and
+-- citations: docs/wow-forever-support.md.
+SWE.PROJECT_FOREVER  = WOW_PROJECT_CAMELOT or 18
+SWE.PROJECT_MISTS    = 19
+
+SWE.buildVersion = select(4, GetBuildInfo())
+
+-- isRetail: API capability ("does this client use the modern C_TradeSkillUI /
+-- ProfessionsFrame / C_GuildInfo / CommunitiesFrame surface?") — true on both Mainline and
+-- Forever despite them being different WOW_PROJECT_IDs.
+SWE.isRetail  = WOW_PROJECT_ID == SWE.PROJECT_MAINLINE or WOW_PROJECT_ID == SWE.PROJECT_FOREVER
+-- isForever: identity, not capability — use this for anything that depends on Forever's
+-- distinct Vanilla-era content rather than its shared retail API surface.
+SWE.isForever = WOW_PROJECT_ID == SWE.PROJECT_FOREVER
 
 -- Shared registry across all addon instances — uses a global so both lib copies can coordinate.
 -- addons: list of registered addon descriptors ({ name, version, helpCommand })

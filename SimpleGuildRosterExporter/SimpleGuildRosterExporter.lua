@@ -238,12 +238,17 @@ end
 attachGuildButton = function()
 	if gre.guildButton then return end
 	-- GetBuildInfo() field 4 is the numeric interface version (e.g. 50400 for MoP 5.4, 120005 for Retail)
-	-- MoP Classic: 50000–59999. Retail: 100000+. All others are earlier classic flavors.
-	local buildVersion = select(4, GetBuildInfo())
-	local isMopOrRetail = (buildVersion >= 50000 and buildVersion < 60000) or buildVersion >= 100000
+	-- SWE.buildVersion is the single shared read of this (see SimpleWowExportersLib.lua) so any
+	-- future game-version logic has one source of truth instead of each addon reading it separately.
+	local buildVersion = SWE.buildVersion
+	-- Communities-based clients (MoP Classic, Retail, Forever/Camelot) all expose GuildInfoTab.
+	-- Detect the frame shape directly rather than by version range — Forever reports 1.60.x
+	-- (interface 16xxx) while running the retail Communities UI, which a MoP/Retail version
+	-- range check would mis-classify as the legacy GuildFrame.
 	local frame, applyButtonPosition
-	if isMopOrRetail and CommunitiesFrame and CommunitiesFrame.GuildInfoTab then
-		-- MoP Classic (50xxx) and Retail (100xxx+): icon tab on right side below GRM's tab or Blizzard's GuildInfoTab
+	if CommunitiesFrame and CommunitiesFrame.GuildInfoTab then
+		-- MoP Classic (50xxx), Retail (100xxx+) and Forever (16xxx): icon tab on right side
+		-- below GRM's tab or Blizzard's GuildInfoTab
 		frame = CommunitiesFrame
 		applyButtonPosition = function(btn)
 			btn:SetPoint("TOP", CommunitiesFrame.GuildInfoTab, "BOTTOM", 0, -64)
@@ -269,17 +274,20 @@ attachGuildButton = function()
 		return
 	end
 
-	local isCommunitiesTabLayout = isMopOrRetail and CommunitiesFrame and CommunitiesFrame.GuildInfoTab
+	local isCommunitiesTabLayout = CommunitiesFrame and CommunitiesFrame.GuildInfoTab ~= nil
 
 	local button = CreateFrame("Button", nil, frame, isCommunitiesTabLayout and "UIPanelButtonGrayTemplate" or "UIPanelButtonTemplate")
 	if isCommunitiesTabLayout then
 		button:SetSize(44, 44)
 		local icon = button:CreateTexture(nil, "OVERLAY")
-		-- MoP Classic is 50xxx; Retail is 100xxx+ — adjusts icon size and centering offset to match each client's tab style
-		local isMopClassic = buildVersion < 100000
-		local iconSize  = isMopClassic and 36 or 33
-		local offsetX   = isMopClassic and 0 or 2.5
-		local offsetY   = isMopClassic and 0 or -1.5
+		-- MoP Classic (5.x, 50xxx) uses a larger, centred icon; Retail (12.x, 100xxx+) and
+		-- Forever (1.60.x, 16xxx — retail Communities UI) use a slightly smaller icon with a
+		-- nudge to match Blizzard's tab art. Forever is explicitly grouped with Retail here
+		-- since both share the same tab art, unlike MoP Classic's larger icon.
+		local usesMopIconMetrics = buildVersion >= 50000 and buildVersion < 60000
+		local iconSize  = usesMopIconMetrics and 36 or 33
+		local offsetX   = usesMopIconMetrics and 0 or 2.5
+		local offsetY   = usesMopIconMetrics and 0 or -1.5
 		icon:SetPoint("CENTER", button, "CENTER", offsetX, offsetY)
 		icon:SetSize(iconSize, iconSize)
 		icon:SetTexture("Interface\\Icons\\inv_misc_note_05")
