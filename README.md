@@ -1,14 +1,15 @@
 # Overview
 
-Simple World of Warcraft exporters is a suite of focused addons that make it easy to export your in game data. These tools empower players and guilds to organize their trade skills, rosters and more. Supports Retail and all classic WoW flavors. Every addon offers multiple export options including Text, CSV and Markdown formats.
+Simple World of Warcraft exporters is a suite of focused addons that make it easy to export your in game data. These tools empower players and guilds to organize their trade skills, rosters and more. Supports Retail, WoW Forever, and all classic WoW flavors. Every addon offers multiple export options including Text, CSV and Markdown formats.
 
 ## SimpleTradeSkillExporter
 
-Simple Trade Skill Exporter is an addon which allows you to export your learned trade skill recipes. It supports all professions and is triggered via the tradeskill window or slash commands. You can export your recipes as plain text, Markdown list, Markdown table, or CSV — with Wowhead links on supported clients. Supports Retail (Midnight) and all classic WoW flavors. Originally inspired by TradeSkillExporter, created with permission from GrumpyOldLisian. Part of the *SimpleWowExporters* collection of addons.
+Simple Trade Skill Exporter is an addon which allows you to export your learned trade skill recipes. It supports all professions and is triggered via the tradeskill window or slash commands. You can export your recipes as plain text, Markdown list, Markdown table, or CSV — with Wowhead links on supported clients. Supports Retail (Midnight), WoW Forever, and all classic WoW flavors. Originally inspired by TradeSkillExporter, created with permission from GrumpyOldLisian. Part of the *SimpleWowExporters* collection of addons.
 
 ### Supported Versions
 
 - Retail (Midnight)
+- WoW Forever
 - Mists of Pandaria Classic
 - Cataclysm Classic
 - Wrath of the Lich King Classic
@@ -46,6 +47,7 @@ Simple Guild Roster Exporter allows you to export your guild roster to plain tex
 ### Supported Versions
 
 - Retail (Midnight)
+- WoW Forever
 - Mists of Pandaria Classic
 - Cataclysm Classic
 - Wrath of the Lich King Classic
@@ -54,7 +56,7 @@ Simple Guild Roster Exporter allows you to export your guild roster to plain tex
 
 ### Usage
 
-Open the guild frame, then either use `/grexport` or click the export button. On classic clients (Vanilla through Cataclysm) this is a **GRExport** button in the title bar. On MoP Classic and Retail, it appears as an icon tab on the right side panel of the guild frame.
+Open the guild frame, then either use `/grexport` or click the export button. On classic clients (Vanilla through Cataclysm) this is a **GRExport** button in the title bar. On MoP Classic, Retail, and WoW Forever, it appears as an icon tab on the right side panel of the guild frame.
 
 The export window opens with format controls built in — switch between Text, CSV, Markdown List, and Markdown Table without reopening.
 
