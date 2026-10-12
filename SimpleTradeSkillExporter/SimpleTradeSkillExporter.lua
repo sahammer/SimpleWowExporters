@@ -1,26 +1,32 @@
 -- SimpleTradeSkillExporter
 -- Author: Hamma
 -- Description: Exports trade skill recipes to plain text, CSV, Markdown list, or Markdown table.
---              Supports Retail (Midnight) and all classic WoW flavors (Vanilla, TBC, Wrath, Cata, MoP).
+--              Supports Retail (Midnight), WoW Forever, and all classic WoW flavors
+--              (Vanilla, TBC, Wrath, Cata, MoP).
 --              Use /tsexport or the Export button on the tradeskill window.
 
 local addonName, tse        = ...
 local SWE                   = tse.SWE -- loaded by SimpleWowExportersLib.lua via TOC
 
--- WOW_PROJECT_* constants are only defined on their respective clients.
--- Use numeric literals as table keys to avoid nil key errors on other clients.
--- Values sourced from https://warcraft.wiki.gg/wiki/WOW_PROJECT_ID
-local PROJECT_MAINLINE      = 1
-local PROJECT_CLASSIC       = 2
-local PROJECT_TBC           = 5
-local PROJECT_WRATH         = 11
-local PROJECT_CATA          = 14
-local PROJECT_MISTS         = 19
-
-local isRetail              = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+-- Game-version identity (PROJECT_* constants, isRetail, isForever) lives in SWE, not here —
+-- see Shared/SimpleWowExportersLib.lua for the full citation trail. Local aliases below keep
+-- the rest of this file's existing call sites unchanged.
+local PROJECT_MAINLINE      = SWE.PROJECT_MAINLINE
+local PROJECT_CLASSIC       = SWE.PROJECT_CLASSIC
+local PROJECT_TBC           = SWE.PROJECT_TBC
+local PROJECT_WRATH         = SWE.PROJECT_WRATH
+local PROJECT_CATA          = SWE.PROJECT_CATA
+local PROJECT_FOREVER       = SWE.PROJECT_FOREVER
+local PROJECT_MISTS         = SWE.PROJECT_MISTS
+local isRetail               = SWE.isRetail
+local isForever               = SWE.isForever
 
 local wowheadUrls           = {
 	[PROJECT_MAINLINE] = "https://www.wowhead.com/",
+	-- Wowhead hosts Forever under its own path with the same item=/spell= fragment structure as
+	-- every other flavor (verified manually). Trailing slash is mandatory — see
+	-- getWowheadPath() / buildExportText() concatenation.
+	[PROJECT_FOREVER]  = "https://www.wowhead.com/forever/",
 	[PROJECT_MISTS]    = "https://wowhead.com/mop-classic/",
 	[PROJECT_CATA]     = "https://wowhead.com/cata/",
 	[PROJECT_WRATH]    = "https://wowhead.com/wotlk/",
@@ -31,6 +37,7 @@ tse.wowheadBase             = wowheadUrls[WOW_PROJECT_ID]
 
 local expansionItemIdFloors = {
 	[PROJECT_MAINLINE] = 210000, -- Midnight
+	[PROJECT_FOREVER]  = nil, -- single-expansion (Vanilla-era) content, no floor applies
 	[PROJECT_MISTS]    = 71000,
 	[PROJECT_CATA]     = 52000,
 	[PROJECT_WRATH]    = 35000,
@@ -189,6 +196,13 @@ end
 
 local function captureRecipeData()
 	if isRetail then
+		-- C_TradeSkillUI.GetChildProfessionInfo()/GetBaseProfessionInfo() reflect Blizzard's
+		-- last-tracked profession, not whether ProfessionsFrame is actually open — they keep
+		-- returning stale data from a profession opened earlier in the session even after the
+		-- window is closed. Require the frame to be shown, matching the classic branch below
+		-- (GetTradeSkillLine() naturally returns skillRank 0 when no window is open).
+		if not (ProfessionsFrame and ProfessionsFrame:IsShown()) then return false end
+
 		local profInfo = C_TradeSkillUI.GetChildProfessionInfo()
 		if not profInfo or not profInfo.professionID then
 			profInfo = C_TradeSkillUI.GetBaseProfessionInfo()
@@ -275,7 +289,20 @@ local function buildExportText(format, scope)
 	local count = #filtered
 
 	-- Retail recipes carry expansionName from GetProfessionInfoByRecipeID; classic recipes do not.
-	local hasExpansionGroups = isRetail and filtered[1] ~= nil and filtered[1].expansionName ~= nil
+	-- Forever is single-expansion (Vanilla-era) content, so every recipe shares one expansionName
+	-- (or nil) — only group into sections when there is more than one distinct value, otherwise
+	-- it's a single useless section header.
+	local distinctExpansionNames = {}
+	local distinctExpansionCount = 0
+	if isRetail then
+		for _, recipe in ipairs(filtered) do
+			if recipe.expansionName and not distinctExpansionNames[recipe.expansionName] then
+				distinctExpansionNames[recipe.expansionName] = true
+				distinctExpansionCount = distinctExpansionCount + 1
+			end
+		end
+	end
+	local hasExpansionGroups = distinctExpansionCount > 1
 
 	if hasExpansionGroups then
 		-- csv and md-table: emit column header with Expansion column
@@ -344,7 +371,9 @@ local function runExport(exportType, exportAll)
 				{ label = "MD Table", value = "markdown-table", disabled = not tse.wowheadBase },
 			},
 			defaultFormat = "text",
-			hasScope      = tse.expansionItemIdFloor ~= nil or isRetail,
+			-- Forever is single-expansion content — hide the scope toggle like classic flavors,
+			-- even though it shares the retail C_TradeSkillUI capability.
+			hasScope      = tse.expansionItemIdFloor ~= nil or (isRetail and not isForever),
 			onRefresh     = buildExportText,
 		})
 	end

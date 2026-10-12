@@ -1,3 +1,10 @@
+# 1.5.0
+Adds WoW Forever support.
+
+- Added support for WoW Forever — exports recipes using the same Retail profession API, with its own Wowhead link base and expansion scoping
+- Fixed CSV / MD List / MD Table exports not grouping sections for single-expansion professions (also improves Retail output)
+- Fixed `/tsexport` opening the export window with stale data from a previously closed profession window instead of showing the "must open a tradeskill window" error
+
 # 1.4.2
 Bumps interface versions for the latest Retail, TBC Anniversary, and Classic Era patches.
 

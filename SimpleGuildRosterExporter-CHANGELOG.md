@@ -1,3 +1,9 @@
+# 1.1.0
+Adds WoW Forever support.
+
+- Added support for WoW Forever — the export button now appears on its Communities-based guild window
+- Fixed the export button not appearing on WoW Forever's guild window, which was misdetected as the legacy classic guild frame
+
 # 1.0.3
 Bumps interface versions for the latest Retail, TBC Anniversary, and Classic Era patches.
 

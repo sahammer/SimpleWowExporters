@@ -1,6 +1,7 @@
 ## Interface: 50504
 ## Interface-Mists: 50504
 ## Interface-Retail: 120100
+## Interface-Forever: 16001
 ## Interface-TBC: 20506
 ## Interface-Vanilla: 11509
 ## Interface-Wrath: 30405
